@@ -25,22 +25,6 @@
         text-shadow: 2px 3px 5px rgba(0, 0, 0, 0.5);
       }
 
-      .dynamic-container {
-        /* Add your styles for dynamic container */
-      }
-
-      .dynamic-image {
-        /* Add your styles for dynamic image */
-      }
-
-      .dynamic-text {
-        /* Add your styles for dynamic text */
-      }
-
-      .headline-teaser {
-        /* Add your styles for headline teaser */
-      }
-
       .digital-news-paper {
         position: absolute;
         height: 100%;
@@ -61,8 +45,7 @@
       if (!newsIndexLocal) {
         localStorage.setItem("newsIndex", "0");
       } else {
-        let newsIndex = parseInt(newsIndexLocal);
-        console.log("init", newsIndex);
+        newsIndex = parseInt(newsIndexLocal);
       }
       // Function to render Dynamic Container
       function renderDynamicContainer(properties) {
@@ -360,7 +343,6 @@
         };
 
         const container = document.getElementById("digital-news-paper");
-        newsIndex = parseInt(newsIndexLocal);
 
         // Fetch news data and render components
         getLiveLocalLabNews()
@@ -392,6 +374,8 @@
                   ...template,
                 });
               }
+
+              console.log({ newsIndex });
 
               if (template.componentId == "headline-teaser") {
                 container.innerHTML += renderHeadlineTeaser({
