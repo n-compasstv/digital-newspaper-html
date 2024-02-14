@@ -1,406 +1,506 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dynamic Newspaper</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap"
-      rel="stylesheet" />
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      /* CSS Styles */
-      .position-absolute {
-        position: absolute;
-      }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dynamic Newspaper</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:ital,wght@0,400..700;1,400..700&family=Nunito+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&display=swap"
+            rel="stylesheet"
+        />
 
-      .standard-line-height {
-        line-height: 1.2em;
-      }
-
-      .text-shadow {
-        text-shadow: 2px 3px 5px rgba(0, 0, 0, 0.5);
-      }
-
-      .digital-news-paper {
-        position: absolute;
-        height: 100%;
-        width: 100%;
-      }
-      /* Add any other styles as needed */
-    </style>
-  </head>
-  <body>
-    <div id="digital-news-paper" class="digital-news-paper"></div>
-
-    <script>
-      // Get Saved NewsIndex
-      let newsIndexLocal = localStorage.getItem("newsIndex");
-      let newsIndex = 0;
-      let newsData = [];
-
-      if (!newsIndexLocal) {
-        localStorage.setItem("newsIndex", "0");
-      } else {
-        newsIndex = parseInt(newsIndexLocal);
-      }
-      // Function to render Dynamic Container
-      function renderDynamicContainer(properties) {
-        if (!properties) return "";
-
-        const background =
-          properties.backgroundFade !== "none"
-            ? `linear-gradient(to ${properties.backgroundFade}, rgba(${hexToRgb(
-                properties.background
-              )}, 1), rgba(${hexToRgb(properties.background)}, 0))`
-            : properties.background;
-
-        const html = `
-          <div class="dynamic-container position-absolute" style="
-              background: ${background};
-              width: ${(properties.width / 1920) * 100}%;
-              height: ${(properties.height / 1080) * 100}%;
-              left: ${(properties.x / 1920) * 100}%;
-              top: ${(properties.y / 1080) * 100}%;
-              z-index: ${properties.zIndex};
-          "></div>
-      `;
-        return html;
-      }
-
-      // Function to convert hex color to RGB
-      function hexToRgb(hex) {
-        // Remove the hash character if it exists
-        hex = hex.replace("#", "");
-
-        // Parse the hex values to get the individual RGB components
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-
-        // Return the RGB values as a string
-        return r + "," + g + "," + b;
-      }
-
-      // Function to render Dynamic Image
-      function renderDynamicImage(properties) {
-        if (!properties) return "";
-
-        const html = `
-                  <img class="dynamic-image position-absolute" src="${
-                    properties.imageUrl
-                  }" style="
-                      left: ${properties.x / 19.2}vw;
-                      object-fit: ${properties.fit};
-                      object-position: center;
-                      top: ${properties.y / 10.8}vh;
-                      width: ${
-                        properties.width ? properties.width / 19.2 : "auto"
-                      }vw;
-                      height: ${
-                        properties.height ? properties.height / 10.8 : "auto"
-                      }vh;
-                      z-index: ${properties.zIndex};
-                  ">
-              `;
-        return html;
-      }
-
-      // Function to render Dynamic Text
-      function renderDynamicText(properties) {
-        if (!properties) return "";
-
-        const html = `
-                  <span class="dynamic-text position-absolute" style="
-                      color: ${properties.color};
-                      font-size: ${properties.fontSize / 19.2}vw;
-                      font-family: ${properties.fontFamily};
-                      left: ${(properties.x / 1920) * 100}%;
-                      top: ${(properties.y / 1080) * 100}%;
-                      z-index: ${properties.zIndex};
-                  ">${processText(properties.text)}</span>
-              `;
-        return html;
-      }
-
-      // Function to render Headline Teaser
-      function renderHeadlineTeaser(properties) {
-        if (!properties) return "";
-
-        const positionStyle = properties.verticalPosition
-          ? "bottom: 0;"
-          : `top: ${(properties.y / 1080) * 100}%;`;
-
-        const html = `
-                  <div class="headline-teaser position-absolute" style="
-                      left: ${(properties.x / 1920) * 100}%;
-                      ${positionStyle}
-                      padding-left: ${(properties.paddingX / 1920) * 100}%;
-                      padding-right: ${(properties.paddingX / 1920) * 100}%;
-                      padding-top: ${(properties.paddingY / 1080) * 100}%;
-                      padding-bottom: ${(properties.paddingY / 1080) * 100}%;
-                      z-index: ${properties.zIndex};
-                  ">
-                      ${
-                        properties.headlineBar
-                          ? `<div class="headline-bar" style="background: ${properties.headlineBarColor};"></div>`
-                          : ""
-                      }
-                      ${
-                        properties.headlineText
-                          ? `
-                          <div class="headline-wrapper" style="margin-bottom: ${
-                            (properties.headlineMarginBottom / 1080) * 100
-                          }%;">
-                              <span class="standard-line-height text-shadow" style="
-                                  color: ${properties.headlineColor};
-                                  font-family: ${properties.headlineFontFamily};
-                                  font-size: ${
-                                    properties.headlineSize / 19.2
-                                  }vw;
-                                  font-weight: ${properties.headlineFontWeight};
-                              ">${processText(properties.headlineText)}</span>
-                          </div>
-                      `
-                          : ""
-                      }
-                      ${
-                        properties.teaserText
-                          ? `
-                          <div class="teaser-wrapper" style="margin-bottom: ${
-                            (properties.teaserMarginBottom / 1080) * 100
-                          }%;">
-                              <span class="standard-line-height text-shadow" style="
-                                  color: ${properties.teaserColor};
-                                  font-family: ${properties.teaserFontFamily};
-                                  font-size: ${properties.teaserSize / 19.2}vw;
-                                  font-weight: ${properties.teaserFontWeight};
-                              ">${processText(properties.teaserText)}</span>
-                          </div>
-                      `
-                          : ""
-                      }
-                  </div>
-              `;
-        return html;
-      }
-
-      // Sample function to process text (if needed)
-      function processText(text) {
-        return text.replace(/\n/g, "<br>");
-      }
-
-      // Function to fetch news data
-      function getLiveLocalLabNews() {
-        const URL =
-          "https://api-development.n-compass.online:4203/api/placer/news?community=2887&limit=5";
-        return fetch(URL)
-          .then((response) => response.json())
-          .then((data) => data)
-          .catch((error) => {
-            console.error("Error fetching news:", error);
-            return [];
-          });
-      }
-
-      // Function to initialize the app
-      function initializeApp() {
-        const BASE_TEMPLATE = {
-          newsTemplate: [
-            {
-              componentId: "dynamic-container",
-              background: "#1c2731",
-              backgroundFade: "none",
-              height: 125,
-              width: 1920,
-              x: 0,
-              y: 0,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-container",
-              background: "rgba(0,0,0, 0.2)",
-              height: 1080,
-              width: 1920,
-              x: 0,
-              y: 0,
-              zIndex: 2,
-            },
-            {
-              componentId: "dynamic-container",
-              background: "#1c2731",
-              backgroundFade: "top",
-              height: 800,
-              width: 1920,
-              x: 0,
-              y: 280,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-text",
-              color: "#FFFFFF",
-              fontSize: 70,
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 600,
-              text: "N",
-              x: 20,
-              y: 10,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-text",
-              color: "#FFFFFF",
-              fontSize: 40,
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 600,
-              text: "EWS",
-              x: 70,
-              y: 45,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-text",
-              color: "yellow",
-              fontSize: 20,
-              fontFamily: "'Nunito', sans-serif",
-              fontWeight: 600,
-              text: "Mount Vernon",
-              x: 72,
-              y: 30,
-              zIndex: 3,
-            },
-            {
-              color: "#FFFFFF",
-              componentId: "dynamic-text",
-              fontFamily: "'Nunito', sans-serif",
-              fontSize: 60,
-              fontWeight: 600,
-              isHeadline: 1,
-              text: "",
-              x: 40,
-              y: 760,
-              zIndex: 3,
-            },
-            {
-              componentId: "headline-teaser",
-              headlineText: "",
-              teaserText: "",
-              headlineColor: "#FFEE00",
-              headlineFontFamily: "'Nunito', sans-serif",
-              headlineFontWeight: 600,
-              headlineMarginBottom: 10,
-              headlineSize: 55,
-              headlineBar: true,
-              headlineBarColor: "#FFEE00",
-              paddingX: 50,
-              paddingY: 20,
-              teaserColor: "#FFFFFF",
-              teaserFontFamily: "'Nunito', sans-serif",
-              teaserFontWeight: 500,
-              teaserMarginBottom: 0,
-              teaserSize: 40,
-              verticalPosition: "bottom",
-              x: 0,
-              y: 0,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-text",
-              color: "#FFFFFF",
-              fontSize: 25,
-              fontFamily: "'Nunito', sans-serif",
-              text: "Provided by",
-              x: 1380,
-              y: 47,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-text",
-              color: "#FFEE44",
-              fontSize: 35,
-              fontFamily: "'Nunito', sans-serif",
-              text: "MountVernonNews.com",
-              x: 1520,
-              y: 40,
-              zIndex: 3,
-            },
-            {
-              componentId: "dynamic-image",
-              fit: "cover",
-              height: 1080,
-              imageUrl: "",
-              isFeaturedImage: true,
-              width: 1920,
-              x: 0,
-              y: 0,
-              zIndex: 1,
-            },
-          ],
-          newsItems: [],
-        };
-
-        const container = document.getElementById("digital-news-paper");
-
-        // Fetch news data and render components
-        getLiveLocalLabNews()
-          .then((news) => {
-            newsData = news;
-
-            if (newsIndex >= newsData.length) {
-              newsIndex = 0;
-              localStorage.setItem("newsIndex", "0");
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            /* CSS Styles */
+            .position-absolute {
+                position: absolute;
             }
 
-            // Render news components
-            BASE_TEMPLATE.newsTemplate.forEach((template, index) => {
-              if (template.componentId == "dynamic-container") {
-                container.innerHTML += renderDynamicContainer({
-                  ...template,
-                });
-              }
-
-              if (template.componentId == "dynamic-image") {
-                container.innerHTML += renderDynamicImage({
-                  ...template,
-                  imageUrl: newsData[newsIndex].images[0],
-                });
-              }
-
-              if (template.componentId == "dynamic-text") {
-                container.innerHTML += renderDynamicText({
-                  ...template,
-                });
-              }
-
-              console.log({ newsIndex });
-
-              if (template.componentId == "headline-teaser") {
-                container.innerHTML += renderHeadlineTeaser({
-                  ...template,
-                  headlineText: newsData[newsIndex].headline,
-                  teaserText: newsData[newsIndex].teaser,
-                });
-              }
-            });
-
-            if (newsIndex >= newsData.length) {
-              newsIndex = 0;
-              localStorage.setItem("newsIndex", "0");
+            .standard-line-height {
+                line-height: 1.2em;
             }
 
-            newsIndex += 1;
-            localStorage.setItem("newsIndex", newsIndex.toString());
-          })
-          .catch((error) => {
-            console.error("Error fetching news:", error);
-          });
-      }
+            .text-shadow {
+                text-shadow: 2px 3px 5px rgba(0, 0, 0, 0.5);
+            }
 
-      // Initialize the app
-      initializeApp();
-    </script>
-  </body>
+            .digital-news-paper {
+                position: absolute;
+                height: 100%;
+                width: 100%;
+            }
+            /* Add any other styles as needed */
+        </style>
+    </head>
+    <body>
+        <div id="digital-news-paper" class="digital-news-paper"></div>
+
+        <script>
+            // Get Saved NewsIndex
+            let newsIndexLocal = localStorage.getItem("newsIndex");
+            let newsIndex = 0;
+            let newsData = [];
+
+            if (!newsIndexLocal) {
+                localStorage.setItem("newsIndex", "0");
+            } else {
+                newsIndex = parseInt(newsIndexLocal);
+            }
+
+            // Function to render Dynamic Container
+            function renderDynamicContainer(properties) {
+                if (!properties) return "";
+
+                const background =
+                    properties.backgroundFade !== "none"
+                        ? `linear-gradient(to ${
+                              properties.backgroundFade
+                          }, rgba(${hexToRgb(
+                              properties.background
+                          )}, 1), rgba(${hexToRgb(properties.background)}, 0))`
+                        : properties.background;
+
+                const html = `
+                <div class="dynamic-container position-absolute" style="
+                    background: ${background};
+                    width: ${(properties.width / 1920) * 100}%;
+                    height: ${(properties.height / 1080) * 100}%;
+                    left: ${(properties.x / 1920) * 100}%;
+                    top: ${(properties.y / 1080) * 100}%;
+                    z-index: ${properties.zIndex};
+                "></div>
+            `;
+                return html;
+            }
+
+            // Function to convert hex color to RGB
+            function hexToRgb(hex) {
+                // Remove the hash character if it exists
+                hex = hex.replace("#", "");
+
+                // Parse the hex values to get the individual RGB components
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+
+                // Return the RGB values as a string
+                return r + "," + g + "," + b;
+            }
+
+            // Function to render Dynamic Image
+            function renderDynamicImage(properties) {
+                if (!properties) return "";
+
+                const html = `
+                        <img class="dynamic-image position-absolute" src="${
+                            properties.imageUrl
+                        }" style="
+                            left: ${properties.x / 19.2}vw;
+                            object-fit: ${properties.fit};
+                            object-position: center;
+                            top: ${properties.y / 10.8}vh;
+                            width: ${
+                                properties.width
+                                    ? properties.width / 19.2
+                                    : "auto"
+                            }vw;
+                            height: ${
+                                properties.height
+                                    ? properties.height / 10.8
+                                    : "auto"
+                            }vh;
+                            z-index: ${properties.zIndex};
+                        ">
+                    `;
+                return html;
+            }
+
+            // Function to render Dynamic Text
+            function renderDynamicText(properties) {
+                if (!properties) return "";
+
+                const html = `
+                        <span class="dynamic-text position-absolute" style="
+                            color: ${properties.color};
+                            font-size: ${properties.fontSize / 19.2}vw;
+                            font-family: ${properties.fontFamily};
+                            font-weight: ${properties.fontWeight};
+                            font-style: ${properties.fontStyle};
+                            left: ${(properties.x / 1920) * 100}%;
+                            top: ${(properties.y / 1080) * 100}%;
+                            z-index: ${properties.zIndex};
+                        ">${processText(properties.text)}</span>
+                    `;
+                return html;
+            }
+
+            // Function to render Headline Teaser
+            function renderHeadlineTeaser(properties) {
+                if (!properties) return "";
+
+                const positionStyle = properties.verticalPosition
+                    ? "bottom: 0;"
+                    : `top: ${(properties.y / 1080) * 100}%;`;
+
+                const html = `
+                        <div class="headline-teaser position-absolute" style="
+                          background: linear-gradient(to bottom, transparent, ${
+                              properties.background
+                          });
+                            left: ${(properties.x / 1920) * 100}%;
+                            ${positionStyle}
+                            padding-left: ${
+                                (properties.paddingX / 1920) * 100
+                            }%;
+                            padding-right: ${
+                                (properties.paddingX / 1920) * 100
+                            }%;
+                            padding-top: ${(properties.paddingY / 1080) * 100}%;
+                            padding-bottom: ${
+                                (properties.paddingY / 1080) * 100
+                            }%;
+                            z-index: ${properties.zIndex};
+                        ">
+                            ${
+                                properties.headlineBar
+                                    ? `<div class="headline-bar" style="background: ${properties.headlineBarColor};"></div>`
+                                    : ""
+                            }
+                            ${
+                                properties.headlineText
+                                    ? `
+                                <div class="headline-wrapper" style="margin-bottom: ${
+                                    (properties.headlineMarginBottom / 1080) *
+                                    100
+                                }%;">
+                                    <span class="standard-line-height text-shadow" style="
+                                        color: ${properties.headlineColor};
+                                        font-family: ${
+                                            properties.headlineFontFamily
+                                        };
+                                        font-size: ${
+                                            properties.headlineSize / 19.2
+                                        }vw;
+                                        font-weight: ${
+                                            properties.headlineFontWeight
+                                        };
+                                    ">${processText(
+                                        properties.headlineText
+                                    )}</span>
+                                </div>
+                            `
+                                    : ""
+                            }
+                            ${
+                                properties.teaserText
+                                    ? `
+                                <div class="teaser-wrapper" style="margin-bottom: ${
+                                    (properties.teaserMarginBottom / 1080) * 100
+                                }%;">
+                                    <span class="standard-line-height text-shadow" style="
+                                        color: ${properties.teaserColor};
+                                        font-family: ${
+                                            properties.teaserFontFamily
+                                        };
+                                        font-size: ${
+                                            properties.teaserSize / 19.2
+                                        }vw;
+                                        font-weight: ${
+                                            properties.teaserFontWeight
+                                        };
+                                    ">${processText(
+                                        properties.teaserText
+                                    )}</span>
+                                </div>
+                            `
+                                    : ""
+                            }
+                        </div>
+                    `;
+                return html;
+            }
+
+            // Sample function to process text (if needed)
+            function processText(text) {
+                return text.replace(/\n/g, "<br>");
+            }
+
+            // Function to fetch news data
+            function getLiveLocalLabNews() {
+                const URL =
+                    "https://api-development.n-compass.online:4203/api/placer/news?community=2887&limit=5";
+                return fetch(URL)
+                    .then((response) => response.json())
+                    .then((data) => data)
+                    .catch((error) => {
+                        console.error("Error fetching news:", error);
+                        return [];
+                    });
+            }
+
+            // Function to initialize the app
+            function initializeApp() {
+                const BASE_TEMPLATE = {
+                    newsTemplate: [
+                        {
+                            componentId: "dynamic-container",
+                            background: "#022034",
+                            backgroundFade: "none",
+                            height: 125,
+                            width: 1920,
+                            x: 0,
+                            y: 0,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-container",
+                            background: "rgba(0,0,0, 0.2)",
+                            height: 1080,
+                            width: 1920,
+                            x: 0,
+                            y: 0,
+                            zIndex: 2,
+                        },
+                        {
+                            componentId: "dynamic-container",
+                            background: "#1c2731",
+                            backgroundFade: "top",
+                            height: 800,
+                            width: 1920,
+                            x: 0,
+                            y: 280,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#FFFFFF",
+                            fontSize: 80,
+                            fontFamily: "'Ibarra Real Nova', sans-serif",
+                            fontWeight: 600,
+                            fontStyle: "normal",
+                            text: "N",
+                            x: 40,
+                            y: 10,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#FFFFFF",
+                            fontSize: 45,
+                            fontFamily: "'Ibarra Real Nova', sans-serif",
+                            fontWeight: 600,
+                            fontStyle: "normal",
+                            text: "EWS",
+                            x: 102,
+                            y: 48,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#fff",
+                            fontSize: 18,
+                            fontFamily: "'Ibarra Real Nova', sans-serif",
+                            fontWeight: 500,
+                            fontStyle: "normal",
+                            text: "Mount Vernon",
+                            x: 102,
+                            y: 39,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            fontFamily: "'Ibarra Real Nova', sans-serif",
+                            color: "#FFFFFF",
+                            fontSize: 60,
+                            fontWeight: 600,
+                            fontStyle: "normal",
+                            isHeadline: 1,
+                            text: "",
+                            x: 40,
+                            y: 760,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "headline-teaser",
+                            headlineText: "",
+                            teaserText: "",
+                            headlineColor: "#fff",
+                            headlineFontFamily: "'Nunito Sans', sans-serif",
+                            headlineFontWeight: 600,
+                            headlineMarginBottom: 8,
+                            headlineSize: 55,
+                            headlineBar: true,
+                            headlineBarColor: "#FFEE00",
+                            paddingX: 50,
+                            paddingY: 20,
+                            background: " #022034",
+                            teaserColor: "#FFFFFF",
+                            teaserFontFamily: "'Nunito Sans', sans-serif",
+                            teaserFontWeight: 400,
+                            teaserMarginBottom: 0,
+                            teaserSize: 35,
+                            verticalPosition: "bottom",
+                            x: 0,
+                            y: 0,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#FFFFFF",
+                            fontSize: 25,
+                            fontFamily: "'Nunito Sans', sans-serif",
+                            fontWeight: "300",
+                            text: "Provided by",
+                            fontStyle: "normal",
+                            x: 1452,
+                            y: 40,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#fff",
+                            fontSize: 25,
+                            fontFamily: "'Nunito Sans', sans-serif",
+                            fontWeight: "700",
+                            fontStyle: "normal",
+                            text: "MountVernonNews.com",
+                            x: 1590,
+                            y: 40,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "cover",
+                            height: 1080,
+                            imageUrl: "",
+                            isFeaturedImage: true,
+                            width: 1920,
+                            x: 0,
+                            y: 0,
+                            zIndex: 1,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#fff",
+                            fontSize: 20,
+                            fontFamily: "'Nunito Sans', sans-serif",
+                            fontWeight: 600,
+                            fontStyle: "Italic",
+                            text: "MVN",
+                            x: 50,
+                            y: 142,
+                            zIndex: 6,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            color: "#fff",
+                            fontSize: 20,
+                            fontFamily: "'Nunito Sans', sans-serif",
+                            fontStyle: "Italic",
+                            fontWeight: "300",
+                            text: "News Feed",
+                            x: 100,
+                            y: 142,
+                            zIndex: 6,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "contain",
+                            height: "fit-content",
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/wKmapVL4Qefdv0xjoWaQ_bg8.png",
+                            isFeaturedImage: false,
+                            width: 300,
+                            x: 0,
+                            y: 125,
+                            zIndex: 5,
+                        },
+                    ],
+                    newsItems: [],
+                };
+
+                const container = document.getElementById("digital-news-paper");
+
+                // Fetch news data and render components
+                getLiveLocalLabNews()
+                    .then((news) => {
+                        newsData = news;
+
+                        if (newsIndex >= newsData.length) {
+                            newsIndex = 0;
+                            localStorage.setItem("newsIndex", "0");
+                        }
+
+                        // Render news components
+                        BASE_TEMPLATE.newsTemplate.forEach(
+                            (template, index) => {
+                                if (
+                                    template.componentId == "dynamic-container"
+                                ) {
+                                    container.innerHTML +=
+                                        renderDynamicContainer({
+                                            ...template,
+                                        });
+                                }
+
+                                if (template.componentId == "dynamic-image") {
+                                    if (template.isFeaturedImage) {
+                                        container.innerHTML +=
+                                            renderDynamicImage({
+                                                ...template,
+                                                imageUrl:
+                                                    newsData[newsIndex]
+                                                        .images[0],
+                                            });
+                                    } else {
+                                        container.innerHTML +=
+                                            renderDynamicImage({
+                                                ...template,
+                                                imageUrl: template.imageUrl,
+                                            });
+                                    }
+                                }
+
+                                if (template.componentId == "dynamic-text") {
+                                    container.innerHTML += renderDynamicText({
+                                        ...template,
+                                    });
+                                }
+
+                                console.log({ newsIndex });
+
+                                if (template.componentId == "headline-teaser") {
+                                    container.innerHTML += renderHeadlineTeaser(
+                                        {
+                                            ...template,
+                                            headlineText:
+                                                newsData[newsIndex].headline,
+                                            teaserText:
+                                                newsData[newsIndex].teaser,
+                                        }
+                                    );
+                                }
+                            }
+                        );
+
+                        if (newsIndex >= newsData.length) {
+                            newsIndex = 0;
+                            localStorage.setItem("newsIndex", "0");
+                        }
+
+                        newsIndex += 1;
+                        localStorage.setItem("newsIndex", newsIndex.toString());
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching news:", error);
+                    });
+            }
+
+            // Initialize the app
+            initializeApp();
+        </script>
+    </body>
 </html>
