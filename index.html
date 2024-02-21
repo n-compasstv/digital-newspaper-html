@@ -14,6 +14,10 @@
         padding: 0;
       }
 
+      .blur {
+        filter: blur(5px); /* Adjust the blur radius as needed */
+      }
+
       .digital-news-paper {
         position: relative;
         overflow: hidden;
@@ -100,10 +104,13 @@
         if (!properties) return "";
 
         const html = `
-                        <img class="dynamic-image position-absolute" src="${
+                        <img class="dynamic-image position-absolute ${properties.isImageBackdrop ? 'blur' : ''}" src="${
                           properties.imageUrl
                         }" style="
+                            background: ${properties.background};
                             left: ${properties.x / 19.2}vw;
+                            right: ${properties.x / 19.2}vw;
+                            margin: ${properties.margin};
                             object-fit: ${properties.fit};
                             object-position: center;
                             top: ${properties.y / 10.8}vh;
@@ -379,10 +386,23 @@
             },
             {
               componentId: "dynamic-image",
-              fit: "cover",
+              fit: "contain",
               height: 1080,
               imageUrl: "",
               isFeaturedImage: true,
+              left: 0,
+              right: 0,
+              margin: "auto",
+              x: 0,
+              y: 125,
+              zIndex: 2,
+            },
+            {
+              componentId: "dynamic-image",
+              fit: "cover",
+              height: 1080,
+              imageUrl: "",
+              isImageBackdrop: true,
               width: 1920,
               x: 0,
               y: 125,
@@ -452,7 +472,12 @@
                 if (template.isFeaturedImage) {
                   container.innerHTML += renderDynamicImage({
                     ...template,
-                    imageUrl: newsData[newsIndex].images[0],
+                    imageUrl: newsData[newsIndex].images[0]
+                  });
+                } else if (template.isImageBackdrop) {
+                  container.innerHTML += renderDynamicImage({
+                    ...template,
+                    background: `url(${newsData[newsIndex].images[0]}) center center / cover`,
                   });
                 } else {
                   container.innerHTML += renderDynamicImage({
