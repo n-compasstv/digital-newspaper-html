@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dynamic Newspaper</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .blur {
+                filter: blur(5px); /* Adjust the blur radius as needed */
+            }
+
+            .digital-news-paper {
+                position: relative;
+                overflow: hidden;
+                height: 100%;
+                width: 100%;
+            }
+
+            /* CSS Styles */
+            .position-absolute {
+                position: absolute;
+            }
+
+            .standard-line-height {
+                line-height: 1.2em;
+            }
+
+            .text-shadow {
+                text-shadow: 2px 3px 5px rgba(0, 0, 0, 0.5);
+            }
+
+            .digital-news-paper {
+                position: absolute;
+                height: 100%;
+                width: 100%;
+            }
+
+            .dynamic-content {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .content-text {
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                width: 100%;
+            }
+
+            .content-text p {
+                margin: 0;
+            }
+
+            .weather-content {
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            /* Add any other styles as needed */
+        </style>
+    </head>
+    <body>
+        <div id="digital-news-paper" class="digital-news-paper"></div>
+
+        <script>
+            // Get Saved NewsIndex
+            let queryString =
+                "domain%3Dbendbulletin.com%26q%3D%26t%3Darticle%26nfl%3Dwire%26fl%5B%5D%3Dfeatured%2Cspotlight%26l%3D10%2C20%26f%3Drss%26limit%3D10"; // <----- Insert query string here before rendering the page
+            let newsIndexLocal = localStorage.getItem(queryString);
+            let newsIndex = 0;
+            let newsData = [];
+
+            //Dummy Data
+            const weatherContents = [
+                {
+                    time: "3 PM",
+                    temperature: 89,
+                    imageUrl:
+                        "https://www.pngall.com/wp-content/uploads/11/Weather-No-Background.png",
+                    weather: "Mostly Sunny",
+                },
+                {
+                    time: "5 PM",
+                    temperature: 89,
+                    imageUrl:
+                        "https://www.pngall.com/wp-content/uploads/11/Weather-No-Background.png",
+                    weather: "Mostly Sunny",
+                },
+                {
+                    time: "7 PM",
+                    temperature: 77,
+                    imageUrl:
+                        "https://cdn.icon-icons.com/icons2/2791/PNG/512/partly_cloudy_day_sun_clouds_weather_icon_177560.png",
+                    weather: "Cloudys",
+                },
+                {
+                    time: "9 PM",
+                    temperature: 81,
+                    imageUrl:
+                        "https://www.pngall.com/wp-content/uploads/11/Weather-No-Background.png",
+                    weather: "Mostly Sunny",
+                },
+                {
+                    time: "11 PM",
+                    temperature: 65,
+                    imageUrl:
+                        "https://cdn-icons-png.flaticon.com/512/10405/10405450.png",
+                    weather: "Sunny",
+                },
+            ];
+
+            if (!newsIndexLocal) {
+                localStorage.setItem(queryString, "0");
+            } else {
+                newsIndex = parseInt(newsIndexLocal);
+            }
+
+            // Function to render Dynamic Content with Dynamic Text
+            function renderDynamicContent(properties) {
+                console.log(properties, "props");
+                if (!properties) return "";
+
+                const contentCards = weatherContents.map(
+                    (content) => `
+                                    <div class="content-text"style="
+                                        background: ${
+                                            properties.cardBackground
+                                        };
+                                        font-family: ${properties.cardFontFamily};
+                                        font-weight: ${properties.cardFontWeight};
+                                    ">
+                                    <p style="
+                                    font-size: ${
+                                        properties.topFontSize / 19.2
+                                    }vw;
+                                    ">
+                                        ${content.time}
+                                    </p>
+                                    <div class="weather-content" style="
+                                        background: ${properties.weatherBackground}; 
+                                        height: ${properties.weatherHeight}px;
+                                        ">
+                                            <img
+                                                src="${ content.imageUrl }" style="
+                                                    height: ${properties.weatherIconSize}px; 
+                                                    padding-bottom: ${properties.weatherIconPaddingBottom}px
+                                                    "
+                                                >
+                                            <p style="
+                                                color: ${ properties.weatherFontColor }; 
+                                                font-size: ${ properties.weatherFontSize / 19.2 }vw; 
+                                                width: ${ properties.weatherFontWidth}%;
+                                                word-wrap: ${ properties.weatherWordWrap};
+                                                ">
+                                            ${content.weather}
+                                        </p>
+                                    </div>
+                                    <p style="
+                                        font-size: ${ properties.bottomFontSize / 19.2}vw"> 
+                                            ${content.temperature}
+                                    </p>
+
+                                    </div>
+                                `
+                );
+
+                const html = `
+                                <div class="dynamic-content position-absolute" style="
+                                    width: ${(properties.width / 1920) * 100}%;
+                                    height: ${
+                                        (properties.height / 1080) * 100
+                                    }%;
+                                    left: ${(properties.x / 1920) * 100}%;
+                                    top: ${(properties.y / 1080) * 100}%;
+                                    text-transform: ${properties.textTransform};
+                                    z-index: ${properties.zIndex};
+                                    gap: ${properties.gap}px;
+                                ">
+                                    ${contentCards.join("")}
+                                </div>
+                            `;
+                return html;
+            }
+
+            // Function to render Dynamic Container
+            function renderDynamicContainer(properties) {
+                if (!properties) return "";
+
+                const background =
+                    properties.backgroundFade !== "none"
+                        ? `linear-gradient(to ${
+                              properties.backgroundFade
+                          }, rgba(${hexToRgb(
+                              properties.background
+                          )}, 1), rgba(${hexToRgb(properties.background)}, 0))`
+                        : properties.background;
+
+                const html = `
+                                            <div class="dynamic-container position-absolute" style="
+                                                background: ${background};
+                                                width: ${
+                                                    (properties.width / 1920) *
+                                                    100
+                                                }%;
+                                                height: ${
+                                                    (properties.height / 1080) *
+                                                    100
+                                                }%;
+                                                left: ${
+                                                    (properties.x / 1920) * 100
+                                                }%;
+                                                top: ${
+                                                    (properties.y / 1080) * 100
+                                                }%;
+                                                z-index: ${properties.zIndex};
+                                            ">
+                                            </div>
+                                        `;
+                return html;
+            }
+
+            // Function to convert hex color to RGB
+            function hexToRgb(hex) {
+                // Remove the hash character if it exists
+                hex = hex.replace("#", "");
+
+                // Parse the hex values to get the individual RGB components
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+
+                // Return the RGB values as a string
+                return r + "," + g + "," + b;
+            }
+
+            // Function to render Dynamic Image
+            function renderDynamicImage(properties) {
+                if (!properties) return "";
+
+                const html = `
+                                                    <img class="dynamic-image position-absolute ${
+                                                        properties.isImageBackdrop
+                                                            ? "blur"
+                                                            : ""
+                                                    }" src="${
+                    properties.imageUrl
+                }" style="
+                                                        background: ${
+                                                            properties.background
+                                                        };
+                                                        left: ${
+                                                            properties.x / 19.2
+                                                        }vw;
+                                                        right: ${
+                                                            properties.x / 19.2
+                                                        }vw;
+                                                        margin: ${
+                                                            properties.margin
+                                                        };
+                                                        object-fit: ${
+                                                            properties.fit
+                                                        };
+                                                        object-position: center;
+                                                        top: ${
+                                                            properties.y / 10.8
+                                                        }vh;
+                                                        width: ${
+                                                            properties.width
+                                                                ? properties.width /
+                                                                  19.2
+                                                                : "auto"
+                                                        }vw;
+                                                        height: ${
+                                                            properties.height
+                                                                ? properties.height /
+                                                                  10.8
+                                                                : "auto"
+                                                        }vh;
+                                                        z-index: ${
+                                                            properties.zIndex
+                                                        };
+                                                    ">
+                                                `;
+                return html;
+            }
+
+            // Function to render Dynamic Text
+            function renderDynamicText(properties) {
+                if (!properties) return "";
+
+                const html = `
+                                                    <span class="dynamic-text position-absolute" style="
+                                                        color: ${
+                                                            properties.color
+                                                        };
+                                                        font-size: ${
+                                                            properties.fontSize /
+                                                            19.2
+                                                        }vw;
+                                                        font-family: ${
+                                                            properties.fontFamily
+                                                        };
+                                                        font-weight: ${
+                                                            properties.fontWeight
+                                                        };
+                                                        font-style: ${
+                                                            properties.fontStyle
+                                                        };
+                                                        left: ${
+                                                            (properties.x /
+                                                                1920) *
+                                                            100
+                                                        }%;
+                                                        top: ${
+                                                            (properties.y /
+                                                                1080) *
+                                                            100
+                                                        }%;
+                                                        z-index: ${
+                                                            properties.zIndex
+                                                        };
+                                                    ">${processText(
+                                                        properties.text
+                                                    )}</span>
+                                                `;
+                return html;
+            }
+
+            // Function to render Headline Teaser
+            function renderHeadlineTeaser(properties) {
+                if (!properties) return "";
+
+                const positionStyle = properties.verticalPosition
+                    ? "bottom: 0;"
+                    : `top: ${(properties.y / 1080) * 100}%;`;
+
+                const html = `
+                                                    <div class="headline-teaser position-absolute" style="
+                                                      background: linear-gradient(to bottom, transparent, ${
+                                                          properties.background
+                                                      });
+                                                        width: ${
+                                                            (properties.width /
+                                                                1920) *
+                                                            100
+                                                        }%;
+                                                        left: ${
+                                                            (properties.x /
+                                                                1920) *
+                                                            100
+                                                        }%;
+                                                        ${positionStyle}
+                                                        padding-left: ${
+                                                            (properties.paddingX /
+                                                                1920) *
+                                                            100
+                                                        }%;
+                                                        padding-right: ${
+                                                            (properties.paddingX /
+                                                                1920) *
+                                                            100
+                                                        }%;
+                                                        padding-top: ${
+                                                            (properties.paddingY /
+                                                                1080) *
+                                                            100
+                                                        }%;
+                                                        padding-bottom: ${
+                                                            (properties.paddingY /
+                                                                1080) *
+                                                            100
+                                                        }%;
+                                                        z-index: ${
+                                                            properties.zIndex
+                                                        };
+                                                    ">
+                                                        ${
+                                                            properties.headlineBar
+                                                                ? `<div class="headline-bar" style="background: ${properties.headlineBarColor};"></div>`
+                                                                : ""
+                                                        }
+                                                        ${
+                                                            properties.headlineText
+                                                                ? `
+                                                            <div class="headline-wrapper" style="margin-bottom: ${
+                                                                (properties.headlineMarginBottom /
+                                                                    1080) *
+                                                                100
+                                                            }%;">
+                                                                <span class="standard-line-height text-shadow" style="
+                                                                    color: ${
+                                                                        properties.headlineColor
+                                                                    };
+                                                                    font-family: ${
+                                                                        properties.headlineFontFamily
+                                                                    };
+                                                                    font-size: ${
+                                                                        properties.headlineSize /
+                                                                        19.2
+                                                                    }vw;
+                                                                    font-weight: ${
+                                                                        properties.headlineFontWeight
+                                                                    };
+                                                                ">${processText(
+                                                                    properties.headlineText
+                                                                )}</span>
+                                                            </div>
+                                                        `
+                                                                : ""
+                                                        }
+                                                        ${
+                                                            properties.teaserText
+                                                                ? `
+                                                            <div class="teaser-wrapper" style="margin-bottom: ${
+                                                                (properties.teaserMarginBottom /
+                                                                    1080) *
+                                                                100
+                                                            }%;">
+                                                                <span class="standard-line-height text-shadow" style="
+                                                                    color: ${
+                                                                        properties.teaserColor
+                                                                    };
+                                                                    font-family: ${
+                                                                        properties.teaserFontFamily
+                                                                    };
+                                                                    font-size: ${
+                                                                        properties.teaserSize /
+                                                                        19.2
+                                                                    }vw;
+                                                                    font-weight: ${
+                                                                        properties.teaserFontWeight
+                                                                    };
+                                                                ">${processText(
+                                                                    properties.teaserText
+                                                                )}</span>
+                                                            </div>
+                                                        `
+                                                                : ""
+                                                        }
+                                                    </div>
+                                                `;
+                return html;
+            }
+
+            // Sample function to process text (if needed)
+            function processText(text) {
+                return text.replace(/\n/g, "<br>");
+            }
+
+            // Function to initialize the app
+            function initializeApp() {
+                const BASE_TEMPLATE = {
+                    newsTemplate: [
+                        {
+                            componentId: "dynamic-image",
+                            fit: "cover",
+                            imageUrl:
+                                "https://images.unsplash.com/photo-1544264747-d8af8eb09999?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8OHx8fGVufDB8fHx8fA%3D%3D",
+                            isFeaturedImage: false,
+                            width: 1920,
+                            height: 1080,
+                            x: 0,
+                            y: 0,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "contain",
+                            height: "fit-content",
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/oW68FMXzQXCS6Vc8RuqB_142-1427402_weather-weather-forecast-logo-removebg-preview.png",
+                            isFeaturedImage: false,
+                            width: 464,
+                            x: 1432,
+                            y: 39,
+                            zIndex: 7,
+                        },
+
+                        {
+                            componentId: "dynamic-container",
+                            background: "#25343d",
+                            backgroundFade: "none",
+                            height: 55,
+                            width: 1749,
+                            x: 87,
+                            y: 248,
+                            zIndex: 2,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "contain",
+                            height: "fit-content",
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/EpJL4uvRQUCa4sTUFSTw_Rectangle%203%20(4).png",
+                            isFeaturedImage: false,
+                            width: 772,
+                            x: 1064,
+                            y: 235,
+                            zIndex: 4,
+                        },
+
+                        {
+                            componentId: "dynamic-image",
+                            fit: "contain",
+                            height: "fit-content",
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/CAwwakXVRgeiIdU4vad7_Screenshot_2-removebg-preview.png",
+                            isFeaturedImage: false,
+                            width: 260,
+                            x: 1570,
+                            y: 760,
+                            zIndex: 7,
+                        },
+                        {
+                            componentId: "dynamic-container",
+                            background: "#8dc540",
+                            backgroundFade: "none",
+                            height: 86,
+                            width: 1920,
+                            x: 0,
+                            y: 994,
+                            zIndex: 2,
+                        },
+
+                        {
+                            componentId: "dynamic-text",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            color: "#FFF",
+                            fontSize: 35,
+                            fontWeight: 600,
+                            fontStyle: "normal",
+                            isHeadline: 1,
+                            text: "DENVER, CO FORECAST",
+                            x: 130,
+                            y: 250,
+                            zIndex: 3,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            color: "#000",
+                            fontSize: 35,
+                            fontWeight: 700,
+                            fontStyle: "normal",
+                            isHeadline: 1,
+                            text: "TUE 29 August 2023",
+                            x: 1450,
+                            y: 250,
+                            zIndex: 5,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "cover",
+                            height: 86,
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/yh6nTv4pTwyfwfuP5yvW_Vector%201.png",
+                            isFeaturedImage: false,
+                            width: 520,
+                            x: 0,
+                            y: 994,
+                            zIndex: 7,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "contain",
+                            height: "fit-content",
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/13uWsQFm5lNKSTh5O4AH_Screenshot_3-removebg-preview.png",
+                            isFeaturedImage: false,
+                            width: 500,
+                            x: 10,
+                            y: 1010,
+                            zIndex: 8,
+                        },
+                        {
+                            componentId: "dynamic-image",
+                            fit: "contain",
+                            height: "fit-content",
+                            imageUrl:
+                                "https://n-compass-filestack.s3.amazonaws.com/lGGhVsmTQsiTeZXuBGO8_Screenshot_4-removebg-preview%20(1).png",
+                            isFeaturedImage: false,
+                            width: 700,
+                            x: 870,
+                            y: 1005,
+                            zIndex: 8,
+                        },
+                        {
+                            componentId: "dynamic-text",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            color: "#000",
+                            fontSize: 35,
+                            fontWeight: 700,
+                            fontStyle: "italic",
+                            isHeadline: 1,
+                            text: "This weather report is brought to you by",
+                            x: 900,
+                            y: 800,
+                            zIndex: 5,
+                        },
+                        {
+                            componentId: "dynamic-content",
+                            background: "#fff",
+                            backgroundFade: "none",
+                            cardFontFamily: "'Plus Jakarta Sans', sans-serif",
+                            cardFontWeight: 800,
+                            topFontSize: 50,
+                            bottomFontSize: 80,
+                            weatherFontSize: 35,
+                            textTransform: "uppercase",
+                            cardBackground: "#fff",
+                            weatherFontColor: "#fff",
+                            weatherBackground: "#0d3b48",
+                            weatherHeight: 210,
+                            weatherIconPaddingBottom: 12,
+                            weatherFontWidth: 100,
+                            weatherIconSize: 90,
+                            weatherWordWrap: 'break-word',
+                            // height: 423,
+                            width: 1749,
+                            gap: 21,
+                            x: 87,
+                            y: 327,
+                            zIndex: 2,
+                        },
+                    ],
+                    newsItems: [],
+                };
+
+                const container = document.getElementById("digital-news-paper");
+                console.log("newsData:", newsData);
+
+                //newsData = news;
+
+                if (newsIndex >= newsData.length) {
+                    newsIndex = 0;
+                    localStorage.setItem(queryString, "0");
+                }
+
+                // Render news components
+                //console.log("Headline:", newsData[newsIndex].Headline);
+                BASE_TEMPLATE.newsTemplate.forEach((template, index) => {
+                    if (template.componentId == "dynamic-content") {
+                        container.innerHTML += renderDynamicContent({
+                            ...template,
+                        });
+                    }
+
+                    if (template.componentId == "dynamic-container") {
+                        container.innerHTML += renderDynamicContainer({
+                            ...template,
+                        });
+                    }
+
+                    if (template.componentId == "dynamic-image") {
+                        if (template.isFeaturedImage) {
+                            const newsImage =
+                                (newsData[newsIndex] &&
+                                    newsData[newsIndex].Images[0]) ||
+                                "";
+                            container.innerHTML += renderDynamicImage({
+                                ...template,
+                                imageUrl: newsImage.length
+                                    ? newsImage
+                                    : "https://n-compass-filestack.s3.amazonaws.com/tVfAjQBnSza1dV0ukwOA_placeholder-lmp-no-image.jpeg",
+                            });
+                        } else if (template.isImageBackdrop) {
+                            container.innerHTML += renderDynamicImage({
+                                ...template,
+                                background:
+                                    newsData[newsIndex] &&
+                                    `url(${newsData[newsIndex].Images[0]}) center center / cover`,
+                            });
+                        } else {
+                            container.innerHTML += renderDynamicImage({
+                                ...template,
+                                imageUrl: template.imageUrl,
+                            });
+                        }
+                    }
+
+                    if (template.componentId == "dynamic-text") {
+                        container.innerHTML += renderDynamicText({
+                            ...template,
+                        });
+                    }
+
+                    if (template.componentId == "headline-teaser") {
+                        container.innerHTML += renderHeadlineTeaser({
+                            ...template,
+                            headlineText: newsData[newsIndex]
+                                ? newsData[newsIndex].Headline
+                                : "",
+                            teaserText: newsData[newsIndex]
+                                ? newsData[newsIndex].Teaser
+                                : "",
+                        });
+                    }
+                });
+
+                if (newsIndex >= newsData.length) {
+                    newsIndex = 0;
+                    localStorage.setItem(queryString, "0");
+                }
+
+                newsIndex += 1;
+                localStorage.setItem(queryString, newsIndex.toString());
+            }
+
+            // Initialize the app
+            initializeApp();
+        </script>
+    </body>
+</html>
